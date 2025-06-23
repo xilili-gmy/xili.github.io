@@ -1,0 +1,977 @@
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+							<style>
+								body {
+									background-color: white; /* Ensure the iframe has a white background */
+								}
+
+								
+        :root {
+            --primary-color: #4a6fa5;
+            --distracted-color: #e74c3c;
+            --focused-color: #2ecc71;
+            --summary-color: #f39c12;
+            --undo-color: #9b59b6;
+            --background-color: #f5f7fa;
+            --card-color: #ffffff;
+            --text-color: #333333;
+            --timeline-color: #dcdde1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: var(--card-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+
+        .current-time {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .button-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .distracted-btn {
+            background-color: var(--distracted-color);
+        }
+
+        .focused-btn {
+            background-color: var(--focused-color);
+        }
+
+        .summary-btn {
+            background-color: var(--summary-color);
+        }
+
+        .undo-btn {
+            background-color: var(--undo-color);
+        }
+
+        .timeline-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            background-color: var(--card-color);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            max-height: 50vh;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: var(--timeline-color);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+            padding-bottom: 5px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+        }
+
+        .timeline-item.distracted::before {
+            background-color: var(--distracted-color);
+        }
+
+        .timeline-item.focused::before {
+            background-color: var(--focused-color);
+        }
+
+        .timeline-item .time {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .timeline-item .event {
+            margin-bottom: 5px;
+        }
+
+        .timeline-item .duration {
+            font-style: italic;
+            color: #666;
+        }
+
+        .distracted-period {
+            background-color: rgba(231, 76, 60, 0.1);
+            border-left: 3px solid var(--distracted-color);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .summary-container {
+            background-color: var(--card-color);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .summary-title {
+            color: var(--summary-color);
+            margin-bottom: 10px;
+        }
+
+        .summary-content {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .button-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .btn {
+                width: 100px;
+                height: 100px;
+                font-size: 16px;
+            }
+        }
+    
+
+							</style>
+                        </head>
+                        <body>
+                            <!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专注力追踪计时器</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --distracted-color: #e74c3c;
+            --focused-color: #2ecc71;
+            --summary-color: #f39c12;
+            --undo-color: #9b59b6;
+            --background-color: #f5f7fa;
+            --card-color: #ffffff;
+            --text-color: #333333;
+            --timeline-color: #dcdde1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: var(--card-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+
+        .current-time {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .button-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .distracted-btn {
+            background-color: var(--distracted-color);
+        }
+
+        .focused-btn {
+            background-color: var(--focused-color);
+        }
+
+        .summary-btn {
+            background-color: var(--summary-color);
+        }
+
+        .undo-btn {
+            background-color: var(--undo-color);
+        }
+
+        .timeline-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            background-color: var(--card-color);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            max-height: 50vh;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: var(--timeline-color);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+            padding-bottom: 5px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+        }
+
+        .timeline-item.distracted::before {
+            background-color: var(--distracted-color);
+        }
+
+        .timeline-item.focused::before {
+            background-color: var(--focused-color);
+        }
+
+        .timeline-item .time {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .timeline-item .event {
+            margin-bottom: 5px;
+        }
+
+        .timeline-item .duration {
+            font-style: italic;
+            color: #666;
+        }
+
+        .distracted-period {
+            background-color: rgba(231, 76, 60, 0.1);
+            border-left: 3px solid var(--distracted-color);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .summary-container {
+            background-color: var(--card-color);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .summary-title {
+            color: var(--summary-color);
+            margin-bottom: 10px;
+        }
+
+        .summary-content {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .button-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .btn {
+                width: 100px;
+                height: 100px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>专注力追踪计时器</h1>
+            <div class="current-time" id="current-time">加载中...</div>
+        </header>
+
+        <div class="button-container">
+            <button class="btn distracted-btn" id="distracted-btn">又走神</button>
+            <button class="btn focused-btn" id="focused-btn">走完了</button>
+            <button class="btn summary-btn" id="summary-btn">汇总</button>
+            <button class="btn undo-btn" id="undo-btn">撤销</button>
+        </div>
+
+        <div class="timeline-container">
+            <div class="timeline" id="timeline">
+                <!-- 时间轴内容将通过JavaScript动态生成 -->
+            </div>
+        </div>
+
+        <div class="summary-container" id="summary-container">
+            <h2 class="summary-title">走神时间汇总</h2>
+            <div class="summary-content" id="summary-content">
+                <!-- 汇总内容将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let records = [];
+        let distractedPeriods = [];
+        let lastDistractedTime = null;
+
+        // 更新当前时间
+        function updateCurrentTime() {
+            const now = new Date();
+            const options = {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+                timeZone: 'Asia/Shanghai'
+            };
+            document.getElementById('current-time').textContent = 
+                now.toLocaleString('zh-CN', options);
+        }
+
+        // 格式化时间显示
+        function formatTime(date) {
+            const options = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+                timeZone: 'Asia/Shanghai'
+            };
+            return date.toLocaleString('zh-CN', options).replace(/\//g, '-');
+        }
+
+        // 计算时间间隔
+        function calculateTimeDifference(startTime, endTime) {
+            const diff = Math.abs(endTime - startTime) / 1000; // 转换为秒
+            
+            const hours = Math.floor(diff / 3600);
+            const minutes = Math.floor((diff % 3600) / 60);
+            const seconds = Math.floor(diff % 60);
+            
+            let result = '';
+            if (hours > 0) {
+                result += `${hours}小时 `;
+            }
+            if (minutes > 0 || hours > 0) {
+                result += `${minutes}分钟 `;
+            }
+            result += `${seconds}秒`;
+            
+            return result;
+        }
+
+        // 添加记录到时间轴
+        function addRecord(type) {
+            const now = new Date();
+            const record = {
+                type: type,
+                time: now,
+                timestamp: now.getTime()
+            };
+            
+            // 计算与上一条记录的时间间隔
+            if (records.length > 0) {
+                const lastRecord = records[records.length - 1];
+                record.timeDiff = calculateTimeDifference(lastRecord.time, now);
+            }
+            
+            records.push(record);
+            
+            // 如果是走神记录，保存时间点
+            if (type === 'distracted') {
+                lastDistractedTime = now;
+            } 
+            // 如果是恢复专注记录，且有上一次走神时间点，创建一个走神时间段
+            else if (type === 'focused' && lastDistractedTime) {
+                distractedPeriods.push({
+                    start: lastDistractedTime,
+                    end: now,
+                    duration: now - lastDistractedTime // 毫秒
+                });
+                lastDistractedTime = null;
+            }
+            
+            updateTimeline();
+        }
+
+        // 更新时间轴显示
+        function updateTimeline() {
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = '';
+            
+            let currentDistractedPeriodIndex = -1;
+            let distractedPeriodHtml = '';
+            
+            records.forEach((record, index) => {
+                const timelineItem = document.createElement('div');
+                timelineItem.className = `timeline-item ${record.type}`;
+                
+                const timeElement = document.createElement('div');
+                timeElement.className = 'time';
+                timeElement.textContent = formatTime(record.time);
+                
+                const eventElement = document.createElement('div');
+                eventElement.className = 'event';
+                eventElement.textContent = record.type === 'distracted' ? '开始走神' : '恢复专注';
+                
+                timelineItem.appendChild(timeElement);
+                timelineItem.appendChild(eventElement);
+                
+                if (record.timeDiff) {
+                    const durationElement = document.createElement('div');
+                    durationElement.className = 'duration';
+                    durationElement.textContent = `间隔: ${record.timeDiff}`;
+                    timelineItem.appendChild(durationElement);
+                }
+                
+                // 处理走神时间段的显示
+                if (record.type === 'distracted') {
+                    currentDistractedPeriodIndex++;
+                    distractedPeriodHtml = '';
+                } else if (record.type === 'focused' && currentDistractedPeriodIndex >= 0) {
+                    const period = distractedPeriods[currentDistractedPeriodIndex];
+                    if (period) {
+                        distractedPeriodHtml = `
+                            <div class="distracted-period">
+                                <div>走神时段: ${formatTime(period.start)} 至 ${formatTime(period.end)}</div>
+                                <div>持续时间: ${calculateTimeDifference(period.start, period.end)}</div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                timeline.appendChild(timelineItem);
+                
+                if (distractedPeriodHtml) {
+                    const periodDiv = document.createElement('div');
+                    periodDiv.innerHTML = distractedPeriodHtml;
+                    timeline.appendChild(periodDiv.firstElementChild);
+                    distractedPeriodHtml = '';
+                }
+            });
+            
+            // 滚动到底部
+            timeline.scrollTop = timeline.scrollHeight;
+        }
+
+        // 计算总走神时间
+        function calculateTotalDistractedTime() {
+            let totalMilliseconds = 0;
+            
+            distractedPeriods.forEach(period => {
+                totalMilliseconds += period.duration;
+            });
+            
+            // 如果当前正在走神中，也计算进去
+            if (lastDistractedTime) {
+                totalMilliseconds += (new Date() - lastDistractedTime);
+            }
+            
+            // 转换为可读时间
+            const totalSeconds = Math.floor(totalMilliseconds / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            let result = '';
+            if (hours > 0) {
+                result += `${hours}小时 `;
+            }
+            if (minutes > 0 || hours > 0) {
+                result += `${minutes}分钟 `;
+            }
+            result += `${seconds}秒`;
+            
+            return result;
+        }
+
+        // 显示汇总信息
+        function showSummary() {
+            const summaryContainer = document.getElementById('summary-container');
+            const summaryContent = document.getElementById('summary-content');
+            
+            const totalTime = calculateTotalDistractedTime();
+            const periodsCount = distractedPeriods.length + (lastDistractedTime ? 1 : 0);
+            
+            summaryContent.innerHTML = `
+                <p>总走神次数: ${periodsCount}次</p>
+                <p>总走神时间: ${totalTime}</p>
+            `;
+            
+            summaryContainer.style.display = 'block';
+            
+            // 5秒后自动隐藏
+            setTimeout(() => {
+                summaryContainer.style.display = 'none';
+            }, 5000);
+        }
+
+        // 撤销最后一次记录
+        function undoLastRecord() {
+            if (records.length === 0) return;
+            
+            const lastRecord = records.pop();
+            
+            // 如果撤销的是"恢复专注"记录，也需要移除对应的走神时间段
+            if (lastRecord.type === 'focused' && distractedPeriods.length > 0) {
+                const lastPeriod = distractedPeriods.pop();
+                lastDistractedTime = lastPeriod.start; // 恢复走神状态
+            } 
+            // 如果撤销的是"走神"记录，清除走神状态
+            else if (lastRecord.type === 'distracted') {
+                lastDistractedTime = null;
+            }
+            
+            updateTimeline();
+            
+            // 隐藏汇总信息
+            document.getElementById('summary-container').style.display = 'none';
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 更新当前时间
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+            
+            // 绑定按钮事件
+            document.getElementById('distracted-btn').addEventListener('click', () => {
+                addRecord('distracted');
+            });
+            
+            document.getElementById('focused-btn').addEventListener('click', () => {
+                addRecord('focused');
+            });
+            
+            document.getElementById('summary-btn').addEventListener('click', showSummary);
+            
+            document.getElementById('undo-btn').addEventListener('click', undoLastRecord);
+        });
+    </script>
+</body>
+</html>
+
+
+
+							<script>
+                            	
+        // 全局变量
+        let records = [];
+        let distractedPeriods = [];
+        let lastDistractedTime = null;
+
+        // 更新当前时间
+        function updateCurrentTime() {
+            const now = new Date();
+            const options = {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+                timeZone: 'Asia/Shanghai'
+            };
+            document.getElementById('current-time').textContent = 
+                now.toLocaleString('zh-CN', options);
+        }
+
+        // 格式化时间显示
+        function formatTime(date) {
+            const options = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+                timeZone: 'Asia/Shanghai'
+            };
+            return date.toLocaleString('zh-CN', options).replace(/\//g, '-');
+        }
+
+        // 计算时间间隔
+        function calculateTimeDifference(startTime, endTime) {
+            const diff = Math.abs(endTime - startTime) / 1000; // 转换为秒
+            
+            const hours = Math.floor(diff / 3600);
+            const minutes = Math.floor((diff % 3600) / 60);
+            const seconds = Math.floor(diff % 60);
+            
+            let result = '';
+            if (hours > 0) {
+                result += `${hours}小时 `;
+            }
+            if (minutes > 0 || hours > 0) {
+                result += `${minutes}分钟 `;
+            }
+            result += `${seconds}秒`;
+            
+            return result;
+        }
+
+        // 添加记录到时间轴
+        function addRecord(type) {
+            const now = new Date();
+            const record = {
+                type: type,
+                time: now,
+                timestamp: now.getTime()
+            };
+            
+            // 计算与上一条记录的时间间隔
+            if (records.length > 0) {
+                const lastRecord = records[records.length - 1];
+                record.timeDiff = calculateTimeDifference(lastRecord.time, now);
+            }
+            
+            records.push(record);
+            
+            // 如果是走神记录，保存时间点
+            if (type === 'distracted') {
+                lastDistractedTime = now;
+            } 
+            // 如果是恢复专注记录，且有上一次走神时间点，创建一个走神时间段
+            else if (type === 'focused' && lastDistractedTime) {
+                distractedPeriods.push({
+                    start: lastDistractedTime,
+                    end: now,
+                    duration: now - lastDistractedTime // 毫秒
+                });
+                lastDistractedTime = null;
+            }
+            
+            updateTimeline();
+        }
+
+        // 更新时间轴显示
+        function updateTimeline() {
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = '';
+            
+            let currentDistractedPeriodIndex = -1;
+            let distractedPeriodHtml = '';
+            
+            records.forEach((record, index) => {
+                const timelineItem = document.createElement('div');
+                timelineItem.className = `timeline-item ${record.type}`;
+                
+                const timeElement = document.createElement('div');
+                timeElement.className = 'time';
+                timeElement.textContent = formatTime(record.time);
+                
+                const eventElement = document.createElement('div');
+                eventElement.className = 'event';
+                eventElement.textContent = record.type === 'distracted' ? '开始走神' : '恢复专注';
+                
+                timelineItem.appendChild(timeElement);
+                timelineItem.appendChild(eventElement);
+                
+                if (record.timeDiff) {
+                    const durationElement = document.createElement('div');
+                    durationElement.className = 'duration';
+                    durationElement.textContent = `间隔: ${record.timeDiff}`;
+                    timelineItem.appendChild(durationElement);
+                }
+                
+                // 处理走神时间段的显示
+                if (record.type === 'distracted') {
+                    currentDistractedPeriodIndex++;
+                    distractedPeriodHtml = '';
+                } else if (record.type === 'focused' && currentDistractedPeriodIndex >= 0) {
+                    const period = distractedPeriods[currentDistractedPeriodIndex];
+                    if (period) {
+                        distractedPeriodHtml = `
+                            <div class="distracted-period">
+                                <div>走神时段: ${formatTime(period.start)} 至 ${formatTime(period.end)}</div>
+                                <div>持续时间: ${calculateTimeDifference(period.start, period.end)}</div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                timeline.appendChild(timelineItem);
+                
+                if (distractedPeriodHtml) {
+                    const periodDiv = document.createElement('div');
+                    periodDiv.innerHTML = distractedPeriodHtml;
+                    timeline.appendChild(periodDiv.firstElementChild);
+                    distractedPeriodHtml = '';
+                }
+            });
+            
+            // 滚动到底部
+            timeline.scrollTop = timeline.scrollHeight;
+        }
+
+        // 计算总走神时间
+        function calculateTotalDistractedTime() {
+            let totalMilliseconds = 0;
+            
+            distractedPeriods.forEach(period => {
+                totalMilliseconds += period.duration;
+            });
+            
+            // 如果当前正在走神中，也计算进去
+            if (lastDistractedTime) {
+                totalMilliseconds += (new Date() - lastDistractedTime);
+            }
+            
+            // 转换为可读时间
+            const totalSeconds = Math.floor(totalMilliseconds / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            let result = '';
+            if (hours > 0) {
+                result += `${hours}小时 `;
+            }
+            if (minutes > 0 || hours > 0) {
+                result += `${minutes}分钟 `;
+            }
+            result += `${seconds}秒`;
+            
+            return result;
+        }
+
+        // 显示汇总信息
+        function showSummary() {
+            const summaryContainer = document.getElementById('summary-container');
+            const summaryContent = document.getElementById('summary-content');
+            
+            const totalTime = calculateTotalDistractedTime();
+            const periodsCount = distractedPeriods.length + (lastDistractedTime ? 1 : 0);
+            
+            summaryContent.innerHTML = `
+                <p>总走神次数: ${periodsCount}次</p>
+                <p>总走神时间: ${totalTime}</p>
+            `;
+            
+            summaryContainer.style.display = 'block';
+            
+            // 5秒后自动隐藏
+            setTimeout(() => {
+                summaryContainer.style.display = 'none';
+            }, 5000);
+        }
+
+        // 撤销最后一次记录
+        function undoLastRecord() {
+            if (records.length === 0) return;
+            
+            const lastRecord = records.pop();
+            
+            // 如果撤销的是"恢复专注"记录，也需要移除对应的走神时间段
+            if (lastRecord.type === 'focused' && distractedPeriods.length > 0) {
+                const lastPeriod = distractedPeriods.pop();
+                lastDistractedTime = lastPeriod.start; // 恢复走神状态
+            } 
+            // 如果撤销的是"走神"记录，清除走神状态
+            else if (lastRecord.type === 'distracted') {
+                lastDistractedTime = null;
+            }
+            
+            updateTimeline();
+            
+            // 隐藏汇总信息
+            document.getElementById('summary-container').style.display = 'none';
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 更新当前时间
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+            
+            // 绑定按钮事件
+            document.getElementById('distracted-btn').addEventListener('click', () => {
+                addRecord('distracted');
+            });
+            
+            document.getElementById('focused-btn').addEventListener('click', () => {
+                addRecord('focused');
+            });
+            
+            document.getElementById('summary-btn').addEventListener('click', showSummary);
+            
+            document.getElementById('undo-btn').addEventListener('click', undoLastRecord);
+        });
+    
+
+							</script>
+                        </body>
+                        </html>
+                    
